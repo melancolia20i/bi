@@ -20,7 +20,20 @@ _start:
 	popq	%rax
 	cmpq	$2, %rax
 	jne	.usage
-	jmp	.exit
+	popq	%rax
+	popq	%r8
+.lexer_loop:
+	movzbl	(%r8), %edi
+	cmpb	$0, %dil
+	je	.continue
+	call	.IsItToken	
+	
+.lexer_inc:
+	incq	%r8
+	jmp	.lexer_loop
+
+.continue:
+
 .usage:
 	movq	$1, %rax
 	movq	$1, %rdi
@@ -31,3 +44,25 @@ _start:
 	movq	$60, %rax
 	movq	$0, %rdi
 	syscall
+
+.IsItToken:
+	movq	$1, %rax
+	cmpb	$'.', %dil
+	je	.isitok_ret
+	cmpb	$',', %dil
+	je	.isitok_ret
+	cmpb	$'+', %dil
+	je	.isitok_ret
+	cmpb	$'-', %dil
+	je	.isitok_ret
+	cmpb	$'<', %dil
+	je	.isitok_ret
+	cmpb	$'>', %dil
+	je	.isitok_ret
+	cmpb	$'[', %dil
+	je	.isitok_ret
+	cmpb	$']', %dil
+	je	.isitok_ret
+	movq	$0, %rax
+.isitok_ret:
+	ret
